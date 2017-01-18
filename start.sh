@@ -1,0 +1,1 @@
+mvn exec:java -Dexec.mainClass="JWaveConsole" -Dexec.args="cnf/cmd_classes.xml"

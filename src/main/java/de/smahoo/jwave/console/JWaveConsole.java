@@ -407,7 +407,7 @@ public class JWaveConsole implements Runnable {
 							   "          connected to port = "+currentSerialPort+"\r\n"+
 							   "             z-wave home id = "+cntrl.getHomeId()+"\r\n"+
 							   "  z-wave controller version = "+cntrl.getControllerVersion()+"\r\n"+
-							   "        z-wave chip version = "+cntrl.getJWaveChipVersion()+"\r\n"+
+							   "        z-wave chip version = "+cntrl.getZWaveChipVersion()+"\r\n"+
 							   "--------------------------------------------------"+"\r\n");					
 		}
 	}
