@@ -10,6 +10,7 @@ import de.smahoo.jwave.event.JWaveErrorEvent;
 import de.smahoo.jwave.event.JWaveEvent;
 import de.smahoo.jwave.event.JWaveEventListener;
 import de.smahoo.jwave.node.JWaveNode;
+import de.smahoo.jwave.specification.JWaveSpecification;
 import gnu.io.CommPort;
 import gnu.io.CommPortIdentifier;
 import gnu.io.NoSuchPortException;
@@ -17,23 +18,14 @@ import gnu.io.SerialPort;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 
 /**
- * 
- * @version 1.0.2
- * 
- * @author Mathias Runge (mathias.runge@domoone.de)
- *
- * =======================================================
- *   Change History
- * =======================================================
- * 1.0.2    reset became single command instead of sub command for set
- * 
- * 1.0.1	minor changes
- * 
+ * @author Mathias Runge (mathias.runge@smahoo.de)
  */
 
 public class JWaveConsole implements Runnable {
@@ -53,24 +45,37 @@ public class JWaveConsole implements Runnable {
 	
 	public void run(){		
 		System.out.println("Using JWave v"+JWaveController.getVersion());
-		
-		if (cmdSpecificationPath != null){
-			String path = System.getProperty("user.dir")+System.getProperty("file.separator")+cmdSpecificationPath;
+		JWaveCommandClassSpecification spec = null;
+		String path;
+		if (cmdSpecificationPath != null) {
+			path = System.getProperty("user.dir") + System.getProperty("file.separator") + cmdSpecificationPath;
 			System.out.print("loading Z-Wave Specification ("+cmdSpecificationPath+") ... ");
-			JWaveCommandClassSpecification spec = null;
 			try {
 				spec = new JWaveCommandClassSpecification(path);
+			} catch (Exception exc){
+				System.out.println("ERROR");
+				exc.printStackTrace();
+				return;
+			}
+		} else {
+			System.out.print("loading default Z-Wave Specification from resource ... ");
+			try {
+				spec = JWaveSpecification.loadDefaultSpecification();
+			} catch (Exception exc){
+				System.out.println("ERROR");
+				exc.printStackTrace();
+				return;
+			}
+		}
+
+		System.out.print("generating controller ...");
+			try {
+				cntrl = new JWaveController(spec);
+				System.out.println("OK");
 			}catch (Exception exc){
 				System.out.println("ERROR");
 				System.out.println(exc.getMessage());
 			}
-			System.out.println("OK");
-			cntrl = new JWaveController(spec);
-		} else {
-			cntrl = new JWaveController();
-		}
-
-
 
 		JWaveController.doLogging(true);
 		if (cntrl == null){
@@ -96,9 +101,9 @@ public class JWaveConsole implements Runnable {
 		//System.out.print("> ");
 		while (keepAlive){
 			try {
-				Thread.sleep(1000);
-			} catch (Exception exc){
-				exc.printStackTrace();
+				Thread.sleep(100);
+			} catch (InterruptedException exc){
+				// do nothing - interrupt seems to be intended
 			}
 		}		
 		try {
@@ -627,9 +632,13 @@ public class JWaveConsole implements Runnable {
 		System.out.println("");
 		
 		configFile = System.getProperty("user.dir")+System.getProperty("file.separator")+"cnf"+System.getProperty("file.separator")+"nodes.xml";
+
 		if (args.length > 0){
 			cmdSpecificationPath = args[0];
+		} else {
+			cmdSpecificationPath = null;
 		}
+
 		instance = new JWaveConsole();
 		Thread t = null;
 	    try {
@@ -650,7 +659,6 @@ public class JWaveConsole implements Runnable {
 	    			evalCmd(cmd);
 	    		//	System.out.print("> ");
 	    		}
-	    		
 	    	} catch (Exception exc){
 	    		exc.printStackTrace();
 	    	}
