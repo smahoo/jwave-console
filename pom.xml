@@ -13,7 +13,7 @@
     <dependencies>
         <dependency>
             <groupId>de.smahoo.jwave</groupId>
-            <artifactId>jwave-library</artifactId>
+            <artifactId>libjwave</artifactId>
             <version>0.3.82</version>
         </dependency>
         <dependency>
